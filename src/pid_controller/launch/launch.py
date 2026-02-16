@@ -16,10 +16,10 @@ def generate_launch_description():
             output='screen',
         ),
         Node(
-            package='reference_input',
+            package='py_srvcli',
             executable='reference_input_node',
             name='reference_input_node',
             output='screen',
-        ),
+        )
     ])
 
