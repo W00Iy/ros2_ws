@@ -1,0 +1,7 @@
+joint_simulator_node:
+  ros__parameters:
+    K: 235.0
+    T: 0.16
+    noise: 0.1
+
+  
