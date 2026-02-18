@@ -19,7 +19,7 @@ setup(
     license='Apache-2.0',
     entry_points={
     'console_scripts': [
-        'reference_input_node = py_srvcli.reference_input:main',
+        'reference_input_node = py_srvcli.reference_input_node:main',
     ],
 },
 )
