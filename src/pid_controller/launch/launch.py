@@ -48,6 +48,7 @@ def generate_launch_description():
         executable='reference_input_node',
         name='reference_input_node',
         output='screen',
+        emulate_tty=True,
     )
 
     return LaunchDescription([
