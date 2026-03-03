@@ -30,7 +30,8 @@ def generate_launch_description():
         package='joint_state_publisher',
         executable='joint_state_publisher',
         name='joint_state_publisher',
-        output='screen'
+        output='screen',
+        parameters=[{'robot_description': robot_description}]
     )
 
     # Hvis du vil ha GUI (sliders) istedenfor non-gui, bruk dette i stedet:
