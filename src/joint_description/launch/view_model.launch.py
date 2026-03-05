@@ -17,6 +17,8 @@ def generate_launch_description():
         robot_description = infp.read()
 
     # Robot state publisher (publiserer TF basert på robot_description)
+    robot_description_content = '<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="robot"><link name="world"/></robot>'
+
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
