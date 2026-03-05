@@ -1,8 +1,6 @@
 from setuptools import find_packages, setup
-
 import os
 from glob import glob
-
 
 package_name = 'joint_description'
 
@@ -12,10 +10,17 @@ setup(
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/ament_index/resource_index/packages',
-            ['resource/joint_description']),
-        ('share/joint_description', ['package.xml']),
-        ('share/joint_description/urdf', ['urdf/joint_model.urdf']),
-        ('share/joint_description/launch', ['launch/view_model.launch.py']),
+            ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+
+        # launch-filer
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
+
+        # urdf-filer
+        (os.path.join('share', package_name, 'urdf'), glob('urdf/*')),
+
+        # rviz config-filer (mappa heter config/)
+        (os.path.join('share', package_name, 'config'), glob('config/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -23,13 +28,6 @@ setup(
     maintainer_email='benjambd@stud.ntnu.no',
     description='TODO: Package description',
     license='Apache-2.0',
-    extras_require={
-        'test': [
-            'pytest',
-        ],
-    },
-    entry_points={
-        'console_scripts': [
-        ],
-    },
+    extras_require={'test': ['pytest']},
+    entry_points={'console_scripts': []},
 )
