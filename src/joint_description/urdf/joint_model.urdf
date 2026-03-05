@@ -1,95 +1,121 @@
 <?xml version="1.0"?>
-<robot name="joint_model">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="joint_model">
+
+  <!-- dimensions -->
+  <xacro:property name="mm" value="0.001"/>
+
+  <xacro:property name="stator_size" value="${102*mm}"/>
+  <xacro:property name="rotor_height" value="${10*mm}"/>
+  <xacro:property name="rotor_radius" value="${25*mm}"/>
+
+  <xacro:property name="angle_length" value="${25*mm}"/>
+  <xacro:property name="angle_width" value="${2*mm}"/>
+  <xacro:property name="angle_height" value="${2*mm}"/>
+
+  <!-- handy halves -->
+  <xacro:property name="stator_half" value="${stator_size/2}"/>
+  <xacro:property name="rotor_half" value="${rotor_height/2}"/>
 
   <!-- Materials -->
-  <material name="black">
-    <color rgba="0 0 0 1"/>
-  </material>
-  <material name="red">
-    <color rgba="1 0 0 1"/>
-  </material>
-  <material name="white">
-    <color rgba="1 1 1 1"/>
-  </material>
+  <material name="black"><color rgba="0 0 0 1"/></material>
+  <material name="red"><color rgba="1 0 0 1"/></material>
+  <material name="white"><color rgba="1 1 1 1"/></material>
 
   <!-- Links -->
-  <!-- world: no geometry -->
   <link name="world"/>
+  
+  <link name="base_link">
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+  </link>
 
-  <!-- base_link: no geometry -->
-  <link name="base_link"/>
-
-  <!-- stator_link: 102x102x102 mm black box -->
   <link name="stator_link">
+    <inertial>
+      <mass value="1.0"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+    </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="0.102 0.102 0.102"/>
+        <box size="${stator_size} ${stator_size} ${stator_size}"/>
       </geometry>
       <material name="black"/>
     </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${stator_size} ${stator_size} ${stator_size}"/>
+      </geometry>
+    </collision>
   </link>
 
-  <!-- rotor_link: 10 mm tall, 50 mm diameter red cylinder -->
   <link name="rotor_link">
+    <inertial>
+      <mass value="0.5"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder length="0.010" radius="0.025"/>
+        <cylinder length="${rotor_height}" radius="${rotor_radius}"/>
       </geometry>
       <material name="red"/>
     </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${rotor_height}" radius="${rotor_radius}"/>
+      </geometry>
+    </collision>
   </link>
 
-  <!-- angle_link: 25x2x2 mm white box -->
   <link name="angle_link">
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="0.025 0.002 0.002"/>
+        <box size="${angle_length} ${angle_width} ${angle_height}"/>
       </geometry>
       <material name="white"/>
     </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${angle_length} ${angle_width} ${angle_height}"/>
+      </geometry>
+    </collision>
   </link>
 
   <!-- Joints -->
-  <!-- base_joint: fixed world -> base_link, identity transform -->
   <joint name="base_joint" type="fixed">
     <parent link="world"/>
     <child link="base_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
-  <!-- stator_joint: fixed base_link -> stator_link
-       base_link should be at bottom of stator box => stator center is +0.051 m in z -->
   <joint name="stator_joint" type="fixed">
     <parent link="base_link"/>
     <child link="stator_link"/>
-    <origin xyz="0 0 0.051" rpy="0 0 0"/>
+    <origin xyz="0 0 ${stator_half}" rpy="0 0 0"/>
   </joint>
 
-  <!-- angle: revolute stator_link -> rotor_link
-       rotor center should be on top of stator box:
-       stator top is +0.051 from stator center, so joint is at +0.051 in stator frame,
-       rotor center is +0.005 above joint (half rotor height) => set origin z = 0.051 + 0.005 = 0.056 -->
   <joint name="angle" type="revolute">
     <parent link="stator_link"/>
     <child link="rotor_link"/>
-    <origin xyz="0 0 0.056" rpy="0 0 0"/>
+    <origin xyz="0 0 ${stator_half + rotor_half}" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
-    <!-- limits are optional, but nice to have -->
     <limit lower="-3.14159" upper="3.14159" effort="1.0" velocity="3.0"/>
   </joint>
 
-  <!-- indicator: fixed rotor_link -> angle_link
-       Place angle_link so it goes from center to edge of cylinder in +x,
-       and sticks a bit above the cylinder.
-       Cylinder radius is 0.025, so center-to-edge is 0.0125 at angle_link center.
-       Make it slightly above rotor center: +0.006 (a bit above half height 0.005). -->
   <joint name="indicator" type="fixed">
     <parent link="rotor_link"/>
     <child link="angle_link"/>
-    <origin xyz="0.0125 0 0.006" rpy="0 0 0"/>
+    <origin xyz="${rotor_radius/2} 0 ${rotor_half + 1*mm}" rpy="0 0 0"/>
   </joint>
 
 </robot>
