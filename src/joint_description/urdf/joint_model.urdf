@@ -1,121 +1,25 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="joint_model">
 
-  <!-- dimensions -->
-  <xacro:property name="mm" value="0.001"/>
+  <!-- include macro file -->
+  <xacro:include filename="$(find joint_description)/urdf/joint_model.macro.urdf"/>
 
-  <xacro:property name="stator_size" value="${102*mm}"/>
-  <xacro:property name="rotor_height" value="${10*mm}"/>
-  <xacro:property name="rotor_radius" value="${25*mm}"/>
-
-  <xacro:property name="angle_length" value="${25*mm}"/>
-  <xacro:property name="angle_width" value="${2*mm}"/>
-  <xacro:property name="angle_height" value="${2*mm}"/>
-
-  <!-- handy halves -->
-  <xacro:property name="stator_half" value="${stator_size/2}"/>
-  <xacro:property name="rotor_half" value="${rotor_height/2}"/>
-
-  <!-- Materials -->
-  <material name="black"><color rgba="0 0 0 1"/></material>
-  <material name="red"><color rgba="1 0 0 1"/></material>
-  <material name="white"><color rgba="1 1 1 1"/></material>
-
-  <!-- Links -->
-  <link name="world"/>
-  
-  <link name="base_link">
-    <inertial>
-      <mass value="0.1"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
-    </inertial>
-  </link>
-
-  <link name="stator_link">
+  <!-- world link (no prefix) -->
+  <link name="world">
     <inertial>
       <mass value="1.0"/>
       <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
     </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <box size="${stator_size} ${stator_size} ${stator_size}"/>
-      </geometry>
-      <material name="black"/>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <box size="${stator_size} ${stator_size} ${stator_size}"/>
-      </geometry>
-    </collision>
   </link>
 
-  <link name="rotor_link">
-    <inertial>
-      <mass value="0.5"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
-    </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <cylinder length="${rotor_height}" radius="${rotor_radius}"/>
-      </geometry>
-      <material name="red"/>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <cylinder length="${rotor_height}" radius="${rotor_radius}"/>
-      </geometry>
-    </collision>
-  </link>
+  <!-- instantiate robot with prefix -->
+  <xacro:joint_model prefix="ur1_"/>
 
-  <link name="angle_link">
-    <inertial>
-      <mass value="0.1"/>
-      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
-    </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <box size="${angle_length} ${angle_width} ${angle_height}"/>
-      </geometry>
-      <material name="white"/>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <box size="${angle_length} ${angle_width} ${angle_height}"/>
-      </geometry>
-    </collision>
-  </link>
-
-  <!-- Joints -->
+  <!-- base_joint (no prefix), but child points to prefixed base_link -->
   <joint name="base_joint" type="fixed">
     <parent link="world"/>
-    <child link="base_link"/>
+    <child link="ur1_base_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
-  </joint>
-
-  <joint name="stator_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="stator_link"/>
-    <origin xyz="0 0 ${stator_half}" rpy="0 0 0"/>
-  </joint>
-
-  <joint name="angle" type="revolute">
-    <parent link="stator_link"/>
-    <child link="rotor_link"/>
-    <origin xyz="0 0 ${stator_half + rotor_half}" rpy="0 0 0"/>
-    <axis xyz="0 0 1"/>
-    <limit lower="-3.14159" upper="3.14159" effort="1.0" velocity="3.0"/>
-  </joint>
-
-  <joint name="indicator" type="fixed">
-    <parent link="rotor_link"/>
-    <child link="angle_link"/>
-    <origin xyz="${rotor_radius/2} 0 ${rotor_half + 1*mm}" rpy="0 0 0"/>
   </joint>
 
 </robot>
