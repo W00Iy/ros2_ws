@@ -1,18 +1,95 @@
 <?xml version="1.0"?>
-<robot name="myfirst">
+<robot name="joint_model">
 
-  <material name="gray">
-    <color rgba="0.7 0.7 0.7 1.0"/>
+  <!-- Materials -->
+  <material name="black">
+    <color rgba="0 0 0 1"/>
+  </material>
+  <material name="red">
+    <color rgba="1 0 0 1"/>
+  </material>
+  <material name="white">
+    <color rgba="1 1 1 1"/>
   </material>
 
-  <link name="base_link">
+  <!-- Links -->
+  <!-- world: no geometry -->
+  <link name="world"/>
+
+  <!-- base_link: no geometry -->
+  <link name="base_link"/>
+
+  <!-- stator_link: 102x102x102 mm black box -->
+  <link name="stator_link">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder length="0.6" radius="0.2"/>
+        <box size="0.102 0.102 0.102"/>
       </geometry>
-      <material name="gray"/>
+      <material name="black"/>
     </visual>
   </link>
+
+  <!-- rotor_link: 10 mm tall, 50 mm diameter red cylinder -->
+  <link name="rotor_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.010" radius="0.025"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+  </link>
+
+  <!-- angle_link: 25x2x2 mm white box -->
+  <link name="angle_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.025 0.002 0.002"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+  </link>
+
+  <!-- Joints -->
+  <!-- base_joint: fixed world -> base_link, identity transform -->
+  <joint name="base_joint" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- stator_joint: fixed base_link -> stator_link
+       base_link should be at bottom of stator box => stator center is +0.051 m in z -->
+  <joint name="stator_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="stator_link"/>
+    <origin xyz="0 0 0.051" rpy="0 0 0"/>
+  </joint>
+
+  <!-- angle: revolute stator_link -> rotor_link
+       rotor center should be on top of stator box:
+       stator top is +0.051 from stator center, so joint is at +0.051 in stator frame,
+       rotor center is +0.005 above joint (half rotor height) => set origin z = 0.051 + 0.005 = 0.056 -->
+  <joint name="angle" type="revolute">
+    <parent link="stator_link"/>
+    <child link="rotor_link"/>
+    <origin xyz="0 0 0.056" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <!-- limits are optional, but nice to have -->
+    <limit lower="-3.14159" upper="3.14159" effort="1.0" velocity="3.0"/>
+  </joint>
+
+  <!-- indicator: fixed rotor_link -> angle_link
+       Place angle_link so it goes from center to edge of cylinder in +x,
+       and sticks a bit above the cylinder.
+       Cylinder radius is 0.025, so center-to-edge is 0.0125 at angle_link center.
+       Make it slightly above rotor center: +0.006 (a bit above half height 0.005). -->
+  <joint name="indicator" type="fixed">
+    <parent link="rotor_link"/>
+    <child link="angle_link"/>
+    <origin xyz="0.0125 0 0.006" rpy="0 0 0"/>
+  </joint>
 
 </robot>
